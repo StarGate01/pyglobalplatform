@@ -18,7 +18,7 @@ swig_include_dirs = [f"-I{inc}" for inc in include_dirs]
 library_dirs = pkgconfig('--libs-only-L')
 libraries = pkgconfig('--libs-only-l')
 
-os.system(f"swig -python {" ".join(swig_include_dirs)} -o globalplatform_wrap.c -outdir . globalplatform.i")
+os.system(f"swig -python {' '.join(swig_include_dirs)} -o globalplatform_wrap.c -outdir . globalplatform.i")
 
 globalplatform_module = Extension(
     name="_globalplatform",
