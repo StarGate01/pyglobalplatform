@@ -2,7 +2,7 @@
 
 Swig Python bindings for the GlobalPlatform (https://github.com/kaoh/globalplatform) library.
 
-Not be confused with https://github.com/JavaCardOS/pyGlobalPlatform , which is widely out of date.
+Not to be confused with https://github.com/JavaCardOS/pyGlobalPlatform , which is widely out of date.
 
 ## Requirements
 
