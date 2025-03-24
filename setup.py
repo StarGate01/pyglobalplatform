@@ -21,20 +21,20 @@ libraries = pkgconfig('--libs-only-l')
 os.system(f"swig -python {' '.join(swig_include_dirs)} -o globalplatform_wrap.c -outdir . globalplatform.i")
 
 globalplatform_module = Extension(
-    name="_globalplatform",
-    sources=["globalplatform.i"],
-    include_dirs=include_dirs,
-    library_dirs=library_dirs,
-    libraries=libraries,
-    swig_opts=swig_include_dirs,
-    extra_compile_args=['-fPIC'],
+    name = "_globalplatform",
+    sources = [ "globalplatform.i" ],
+    include_dirs = include_dirs,
+    library_dirs = library_dirs,
+    libraries = libraries,
+    swig_opts = swig_include_dirs,
+    extra_compile_args = ['-fPIC'],
 )
 
 setup(
-    name="globalplatform",
-    version="1.0.0",
-    author="Christoph Honal",
-    description="Python bindings for the GlobalPlatform library",
-    ext_modules=[globalplatform_module],
-    py_modules=["globalplatform"]
+    name = "globalplatform",
+    version = "1.0.0",
+    author = "Christoph Honal",
+    description = "Python bindings for the GlobalPlatform library",
+    ext_modules = [ globalplatform_module ],
+    py_modules = [ "globalplatform" ]
 )
