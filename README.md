@@ -16,17 +16,15 @@ The `pcsclite` and `globalplatform` libraries need to be available via pkg-confi
 
 ## Usage
 
-Since this is just a SWIG wrapper, the API is the same as for the C globalplatform one.
+Since this is just a SWIG wrapper, the API is the same as for the C `globalplatform` one.
 
 All `PBYTE` and `BYTE*` (`unsigned char *`) buffer pointers are marshalled to Python as mutable `bytearray()`. Fixed-size `BYTE[N]` arrays are also marshalled as `bytearray()`, but their length constraints are enforced.
 
-The value pointers `PDWORD` and `DWORD*` (`unsigned long *`) are marshalled as `ctypes.c_int`.
+Pointer function helpers are generated for `DWORD`, which enable handling `PDWORD` pointers.
 
 All functions which return a `OPGP_ERROR_STATUS` result are checked, and an Exception is raised if the status requires it.
 
 Array helper functions are generated for the structs `GP211_APPLICATION_DATA`, `GP211_EXECUTABLE_MODULES_DATA`, and `OPGP_AID`.
-
-Pointer function helpers are generated for `DWORD`.
 
 ### Example
 
