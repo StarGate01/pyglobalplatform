@@ -22,7 +22,7 @@ All `PBYTE` and `BYTE*` (`unsigned char *`) buffer pointers are marshalled to Py
 
 Pointer function helpers are generated for `DWORD`, which enable handling `PDWORD` pointers.
 
-All functions which return a `OPGP_ERROR_STATUS` result are checked, and an Exception is raised if the status requires it.
+All functions which return a `OPGP_ERROR_STATUS` result are checked, and a `OPGPError` Exception is raised if the status requires it.
 
 Array helper functions are generated for the structs `GP211_APPLICATION_DATA`, `GP211_EXECUTABLE_MODULES_DATA`, and `OPGP_AID`.
 
