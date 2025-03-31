@@ -2,7 +2,13 @@ import os
 import sys
 import subprocess
 from setuptools import setup, Extension
-from setuptools.command.build_py import build_py
+from distutils.command.build import build
+
+
+class build_alt_order(build):
+    def __init__(self, *args):
+        super().__init__(*args)
+        self.sub_commands = [('build_ext', build.has_ext_modules), ('build_py', build.has_pure_modules)]
 
 
 def pkgconfig(flag):
@@ -17,9 +23,6 @@ include_dirs = pkgconfig('--cflags-only-I')
 swig_include_dirs = [f"-I{inc}" for inc in include_dirs]
 library_dirs = pkgconfig('--libs-only-L')
 libraries = pkgconfig('--libs-only-l')
-
-# Pre-generate python wrapper
-os.system(f"swig -python -O {' '.join(swig_include_dirs)} -o globalplatform/native_wrap.c -outdir ./globalplatform globalplatform/native.i")
 
 native = Extension(
     name = "globalplatform._native",
@@ -37,5 +40,6 @@ setup(
     author = "Christoph Honal",
     description = "Python bindings for the GlobalPlatform library",
     ext_modules = [ native ],
-    packages = [ "globalplatform" ]
+    packages = [ "globalplatform" ],
+    cmdclass = { "build": build_alt_order }
 )
