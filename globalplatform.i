@@ -55,6 +55,34 @@
     return PyByteArray_FromStringAndSize((const char *) $1, $1_dim0);
 }
 
+
+%pythoncode %{
+    class OPGPError(Exception):
+        def __init__(self, errorStatus, errorCode, errorMessage):
+            self.errorStatus = errorStatus
+            self.errorCode = errorCode
+            self.errorMessage = errorMessage
+            super().__init__(f"OPGPError (0x{errorCode:X}): {errorMessage}")
+    %}
+
+%inline %{
+    static PyObject* OPGPError_class = NULL;
+%}
+
+%init %{
+    PyObject *mod = PyImport_ImportModule("globalplatform"); 
+    if (mod) {
+        PyObject *cls = PyObject_GetAttrString(mod, "OPGPError");
+        if (cls && PyCallable_Check(cls)) {
+            OPGPError_class = cls;
+            Py_INCREF(OPGPError_class);
+        } else {
+            Py_XDECREF(cls);
+        }
+        Py_DECREF(mod);
+    }
+%}
+
 %typemap(out) OPGP_ERROR_STATUS {
     const char* errorMessage = $1.errorMessage;
 
@@ -67,12 +95,22 @@
             errorMessage = "No additional message.";
         }
 
-        PyErr_Format(PyExc_RuntimeError, "Status check failed: %s (Code 0x%X): %s", 
-            error_msg, $1.errorCode, errorMessage);
+        PyObject* exc_args = Py_BuildValue("(lls)", $1.errorStatus, $1.errorCode, errorMessage);
+        if (OPGPError_class && PyCallable_Check(OPGPError_class)) {
+            PyErr_SetObject(OPGPError_class, exc_args);
+        } else {
+            PyErr_Format(PyExc_RuntimeError,
+                         "Status check failed: %s (Code 0x%X): %s",
+                         error_msg, $1.errorCode, errorMessage);
+        }
+        Py_DECREF(exc_args);
         return NULL;
     }
+
     Py_RETURN_NONE;
 }
+
+
 
 %pointer_functions(DWORD, DWORDp)
 
