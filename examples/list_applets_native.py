@@ -1,5 +1,5 @@
 import os
-import globalplatform as gp
+import globalplatform.native as gp
 
 # Enable debug logging to the console
 os.environ["GLOBALPLATFORM_DEBUG"] = "1"
