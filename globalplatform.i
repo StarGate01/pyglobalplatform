@@ -1,5 +1,4 @@
 %module(threads="1") globalplatform
-%feature("nothreadallow");
 %{
 #include "pcsclite.h"
 #include "types.h"
