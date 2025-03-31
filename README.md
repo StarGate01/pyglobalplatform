@@ -26,6 +26,8 @@ All functions which return a `OPGP_ERROR_STATUS` result are checked, and a `OPGP
 
 Array helper functions are generated for the structs `GP211_APPLICATION_DATA`, `GP211_EXECUTABLE_MODULES_DATA`, and `OPGP_AID`.
 
+The wrapper is compiled with threading support, such that the Python GIL is released when library functions are entered.
+
 ### Example
 
 ```python
