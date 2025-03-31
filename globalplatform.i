@@ -1,15 +1,19 @@
 %module(threads="1") globalplatform
 %{
-#include "pcsclite.h"
-#include "types.h"
-#include "unicode.h"
-#include "library.h"
-#include "error.h"
-#include "errorcodes.h"
-#include "stringify.h"
-#include "security.h"
-#include "globalplatform.h"
-#include "connection.h"
+
+    #include "pcsclite.h"
+    #include "types.h"
+    #include "unicode.h"
+    #include "library.h"
+    #include "error.h"
+    #include "errorcodes.h"
+    #include "stringify.h"
+    #include "security.h"
+    #include "globalplatform.h"
+    #include "connection.h"
+
+    static PyObject* OPGPError_class = NULL;
+
 %}
 
 #if defined(SWIGWORDSIZE64)
@@ -65,34 +69,26 @@
             super().__init__(f"OPGPError (0x{errorCode:X}): {errorMessage}")
     %}
 
-%inline %{
-    static PyObject* OPGPError_class = NULL;
-%}
-
-%init %{
-    PyObject *mod = PyImport_ImportModule("globalplatform"); 
-    if (mod) {
-        PyObject *cls = PyObject_GetAttrString(mod, "OPGPError");
-        if (cls && PyCallable_Check(cls)) {
-            OPGPError_class = cls;
-            Py_INCREF(OPGPError_class);
-        } else {
-            Py_XDECREF(cls);
-        }
-        Py_DECREF(mod);
-    }
-%}
-
 %typemap(out) OPGP_ERROR_STATUS {
     const char* errorMessage = $1.errorMessage;
 
     if ($1.errorStatus != OPGP_ERROR_STATUS_SUCCESS) {
         const char* error_msg = OPGP_stringify_error($1.errorCode);
-        if (!error_msg) {
-            error_msg = "Unknown error.";
-        }
-        if (!errorMessage) {
-            errorMessage = "No additional message.";
+        if (!error_msg) error_msg = "Unknown error.";
+        if (!errorMessage) errorMessage = "No additional message.";
+
+        if (!OPGPError_class) {
+            PyObject* mod = PyImport_ImportModule("globalplatform");
+            if (mod) {
+                PyObject* cls = PyObject_GetAttrString(mod, "OPGPError");
+                if (cls && PyCallable_Check(cls)) {
+                    OPGPError_class = cls;
+                    Py_INCREF(OPGPError_class);
+                } else {
+                    Py_XDECREF(cls);
+                }
+                Py_DECREF(mod);
+            }
         }
 
         PyObject* exc_args = Py_BuildValue("(lls)", $1.errorStatus, $1.errorCode, errorMessage);
@@ -109,8 +105,6 @@
 
     Py_RETURN_NONE;
 }
-
-
 
 %pointer_functions(DWORD, DWORDp)
 
