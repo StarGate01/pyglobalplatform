@@ -1,4 +1,5 @@
-%module globalplatform
+%module(threads="1") globalplatform
+%feature("nothreadallow");
 %{
 #include "pcsclite.h"
 #include "types.h"
@@ -7,9 +8,9 @@
 #include "error.h"
 #include "errorcodes.h"
 #include "stringify.h"
+#include "security.h"
 #include "globalplatform.h"
 #include "connection.h"
-#include "security.h"
 %}
 
 #if defined(SWIGWORDSIZE64)
@@ -87,6 +88,6 @@
 %include "error.h"
 %include "errorcodes.h"
 %include "stringify.h"
+%include "security.h"
 %include "globalplatform.h"
 %include "connection.h"
-%include "security.h"
