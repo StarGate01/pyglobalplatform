@@ -173,7 +173,5 @@ cython_debug/
 # PyPI configuration file
 .pypirc
 
-globalplatform_wrap.c
-globalplatform.py
-
 .direnv/
+install/

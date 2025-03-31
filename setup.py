@@ -18,15 +18,16 @@ swig_include_dirs = [f"-I{inc}" for inc in include_dirs]
 library_dirs = pkgconfig('--libs-only-L')
 libraries = pkgconfig('--libs-only-l')
 
-os.system(f"swig -python {' '.join(swig_include_dirs)} -o globalplatform_wrap.c -outdir . globalplatform.i")
+# Pre-generate python wrapper
+os.system(f"swig -python -O {' '.join(swig_include_dirs)} -o globalplatform/native_wrap.c -outdir ./globalplatform globalplatform/native.i")
 
-globalplatform_module = Extension(
-    name = "_globalplatform",
-    sources = [ "globalplatform.i" ],
+native = Extension(
+    name = "globalplatform._native",
+    sources = [ "globalplatform/native.i" ],
     include_dirs = include_dirs,
     library_dirs = library_dirs,
     libraries = libraries,
-    swig_opts = swig_include_dirs,
+    swig_opts = swig_include_dirs + ["-O"],
     extra_compile_args = ['-fPIC'],
 )
 
@@ -35,6 +36,6 @@ setup(
     version = "1.0.0",
     author = "Christoph Honal",
     description = "Python bindings for the GlobalPlatform library",
-    ext_modules = [ globalplatform_module ],
-    py_modules = [ "globalplatform" ]
+    ext_modules = [ native ],
+    packages = [ "globalplatform" ]
 )

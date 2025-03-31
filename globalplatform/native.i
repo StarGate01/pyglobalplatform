@@ -1,4 +1,4 @@
-%module(threads="1") globalplatform
+%module(threads="1") native
 %{
 
     #include "pcsclite.h"
@@ -78,7 +78,7 @@
         if (!errorMessage) errorMessage = "No additional message.";
 
         if (!OPGPError_class) {
-            PyObject* mod = PyImport_ImportModule("globalplatform");
+            PyObject* mod = PyImport_ImportModule("globalplatform.native");
             if (mod) {
                 PyObject* cls = PyObject_GetAttrString(mod, "OPGPError");
                 if (cls && PyCallable_Check(cls)) {
