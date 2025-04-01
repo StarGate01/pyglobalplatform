@@ -30,7 +30,7 @@ native = Extension(
     include_dirs = include_dirs,
     library_dirs = library_dirs,
     libraries = libraries,
-    swig_opts = swig_include_dirs + ["-O"],
+    swig_opts = swig_include_dirs,
     extra_compile_args = ['-fPIC'],
 )
 
