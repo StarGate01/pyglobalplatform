@@ -1,6 +1,6 @@
 {
   inputs = {
-    nixpkgs.url = "github:StarGate01/nixpkgs/gpshell";
+    nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
   };
 
   outputs = { self, nixpkgs }:
