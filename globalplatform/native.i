@@ -112,6 +112,7 @@
 %array_functions(GP211_EXECUTABLE_MODULES_DATA, GP211_EXECUTABLE_MODULES_DATA_Array)
 %array_functions(OPGP_AID, OPGP_AID_Array)
 
+%include "pcsclite.h"
 %include "types.h"
 %include "unicode.h"
 %include "library.h"
