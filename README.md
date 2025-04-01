@@ -6,6 +6,8 @@ Not to be confused with https://github.com/JavaCardOS/pyGlobalPlatform , which i
 
 ## Requirements
 
+Currently, only Linux is supported by the build system.
+
 Python 3 with `setuptools`, a C toolchain, `swig`, and `pkg-config` need to be available.
 
 The `pcsclite` and `globalplatform` libraries need to be available via pkg-config.
