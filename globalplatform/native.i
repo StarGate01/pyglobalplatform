@@ -42,7 +42,6 @@
 
 %apply PBYTE { BYTE* };
 %apply PBYTE { OPGP_STRING };
-%apply PBYTE { OPGP_CSTRING };
 
 %typemap(in) (BYTE [ANY]) {
     if (!PyByteArray_Check($input)) {
