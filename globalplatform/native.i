@@ -111,6 +111,8 @@
 %array_functions(GP211_APPLICATION_DATA, GP211_APPLICATION_DATA_Array)
 %array_functions(GP211_EXECUTABLE_MODULES_DATA, GP211_EXECUTABLE_MODULES_DATA_Array)
 %array_functions(OPGP_AID, OPGP_AID_Array)
+%array_functions(OPGP_STRING, OPGP_STRING_Array)
+%array_functions(OPGP_CSTRING, OPGP_CSTRING_Array)
 
 %include "pcsclite.h"
 %include "types.h"
