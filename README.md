@@ -1,6 +1,6 @@
-# pyglobalplatform
+# pylobalplatform
 
-Swig Python bindings for the GlobalPlatform (https://github.com/kaoh/globalplatform) library.
+High-level API and Swig Python binding for the GlobalPlatform (https://github.com/kaoh/globalplatform) library.
 
 Not to be confused with https://github.com/JavaCardOS/pyGlobalPlatform , which is widely out of date.
 
@@ -24,9 +24,7 @@ The library is split into two parts: The native library adapter `globalplatform.
 
 The high-level shell handles memory management and does proper marshalling of all python types. It still uses `bytearray()` internally, but no longer does modifications in ByRef-passed buffers - instead the actual results are properly returned.
 
-The class `GP211Shell` implements a subset of the `gpshell` supported commands for GP 2.1.1 , ans follows the same semantics.
-
-Example:
+The class `GP211Shell` implements a subset of the `gpshell` supported commands for GP 2.1.1 , and follows the same semantics.
 
 ```python
 from globalplatform import shell, native
@@ -58,6 +56,6 @@ Pointer function helpers are generated for `DWORD`, which enable handling `PDWOR
 
 All functions which return a `OPGP_ERROR_STATUS` result are checked, and a `OPGPError` Exception is raised if the status requires it.
 
-Array helper functions are generated for the structs `GP211_APPLICATION_DATA`, `GP211_EXECUTABLE_MODULES_DATA`, `OPGP_AID`.
+Array helper functions are generated for the structs `GP211_APPLICATION_DATA`, `GP211_EXECUTABLE_MODULES_DATA`, and `OPGP_AID`.
 
 The wrapper is compiled with threading support, such that the Python GIL is released when library functions are entered.
