@@ -33,27 +33,33 @@
 %include "cpointer.i"
 
 %typemap(in) PBYTE {
-    if (!PyByteArray_Check($input)) {
-        PyErr_SetString(PyExc_TypeError, "Argument must be a bytearray object");
+    if ($input == Py_None) {
+        $1 = NULL;
+    } else if (PyByteArray_Check($input)) {
+        $1 = (PBYTE)PyByteArray_AsString($input);
+    } else {
+        PyErr_SetString(PyExc_TypeError, "Argument must be a bytearray or None");
         SWIG_fail;
     }
-    $1 = (PBYTE)PyByteArray_AsString($input);
 }
 
 %apply PBYTE { BYTE* };
 %apply PBYTE { OPGP_STRING };
 
 %typemap(in) (BYTE [ANY]) {
-    if (!PyByteArray_Check($input)) {
-        PyErr_SetString(PyExc_TypeError, "Argument must be a bytearray object");
+    if ($input == Py_None) {
+        $1 = NULL;
+    } else if (PyByteArray_Check($input)) {
+        size_t input_size = PyByteArray_Size($input);
+        if (input_size > $1_dim0) {
+            PyErr_Format(PyExc_ValueError, "Byte array must be at most %d bytes long", $1_dim0);
+            SWIG_fail;
+        }
+        $1 = (PBYTE)PyByteArray_AsString($input);
+    } else {
+        PyErr_SetString(PyExc_TypeError, "Argument must be a bytearray or None");
         SWIG_fail;
     }
-    size_t input_size = PyByteArray_Size($input);
-    if (input_size > $1_dim0) {
-        PyErr_Format(PyExc_ValueError, "Byte array must be at most %d bytes long", $1_dim0);
-        SWIG_fail;
-    }
-    $1 = (PBYTE)PyByteArray_AsString($input);
 }
 
 %typemap(out) BYTE [ANY] {
