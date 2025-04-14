@@ -154,7 +154,6 @@ class GP211Shell():
         gp.OPGP_select_application(self.cardContext, self.cardInfo, aid, len(aid))
         self.selectedAID = aid
 
-    @requireCard
     def card_disconnect(self):
         if(self.cardInfo):
             gp.OPGP_card_disconnect(self.cardContext, self.cardInfo)
@@ -162,7 +161,6 @@ class GP211Shell():
         self.selectedAID = None
         self.secInfo = None
 
-    @requireContext
     def release_context(self):
         if(self.cardContext):
             gp.OPGP_release_context(self.cardContext)
