@@ -168,6 +168,21 @@ class GP211Shell():
         self.selectedAID = None
         self.secInfo = None
 
+    @requireCard
+    def send_apdu(self, capdu, secureChannel = False):
+        bytearray rapdu(65536)
+        recvAPDULenPtr = gp.new_DWORDp()
+        gp.DWORDp_assign(recvAPDULenPtr, 65536)
+        rapduLength = 0
+        try:
+            gp.GP211_send_APDU(self.cardContext, self.cardInfo, 
+                secInfo = self.secInfo if secureChannel else None, capdu = capdu, 
+                capduLength = len(capdu), rapdu = rapdu, rapduLength = recvAPDULenPtr)
+            rapduLength = gp.DWORDp_value(recvAPDULenPtr)
+        finally:
+            gp.delete_DWORDp(recvAPDULenPtr)
+        return rapdu[:rapduLength]
+
     @requireApplet
     def open_sc(self, keySet, keySetVersion = 0, keyIndex = 0, securityLevel = 0):
         # Query secure channel parameters
