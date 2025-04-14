@@ -170,7 +170,7 @@ class GP211Shell():
 
     @requireCard
     def send_apdu(self, capdu, secureChannel = False):
-        bytearray rapdu(65536)
+        rapdu = bytearray(65536)
         recvAPDULenPtr = gp.new_DWORDp()
         gp.DWORDp_assign(recvAPDULenPtr, 65536)
         rapduLength = 0
