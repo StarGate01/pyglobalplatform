@@ -105,8 +105,7 @@ def requireSecureChannel(func):
     return checkSecureChannel
 
 
-class GP211Shell(OpenPlatformShell):
-    
+class GP211Shell():
     def __init__(self):
         self.cardContext = None
         self.cardInfo = None
