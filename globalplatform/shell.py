@@ -105,10 +105,13 @@ def requireSecureChannel(func):
     return checkSecureChannel
 
 
-class OpenPlatformShell:
+class GP211Shell(OpenPlatformShell):
+    
     def __init__(self):
         self.cardContext = None
         self.cardInfo = None
+        self.selectedAID = None
+        self.secInfo = None
 
     def enable_logging(self, enable = True, fileName = "/dev/stdout"):
         os.environ["GLOBALPLATFORM_DEBUG"] = "1" if enable else "0"
@@ -154,15 +157,20 @@ class OpenPlatformShell:
 
     @requireCard
     def card_disconnect(self):
-        gp.OPGP_card_disconnect(self.cardContext, self.cardInfo)
+        if(self.cardInfo):
+            gp.OPGP_card_disconnect(self.cardContext, self.cardInfo)
+        self.cardInfo = None
+        self.selectedAID = None
+        self.secInfo = None
 
     @requireContext
     def release_context(self):
-        gp.OPGP_release_context(self.cardContext)
+        if(self.cardContext):
+            gp.OPGP_release_context(self.cardContext)
+        self.cardInfo = None
+        self.selectedAID = None
+        self.secInfo = None
 
-
-class GP211Shell(OpenPlatformShell):
-    
     @requireApplet
     def open_sc(self, keySet, keySetVersion = 0, keyIndex = 0, securityLevel = 0):
         # Query secure channel parameters
@@ -200,12 +208,15 @@ class GP211Shell(OpenPlatformShell):
                     modules = []
                     for j in range(exe.numExecutableModules):
                         module = gp.OPGP_AID_Array_getitem(exe.executableModules, j)
+                        aid = module.AID[:module.AIDLength]
                         modules.append({
-                            "AID": module.AID[:module.AIDLength]
+                            "AID": aid.hex() if convert else aid
                         })
+                    aid = exe.aid.AID[:exe.aid.AIDLength]
+                    sdaid = exe.associatedSecurityDomainAID.AID[:exe.associatedSecurityDomainAID.AIDLength]
                     executables.append({
-                        "AID": exe.aid.AID[:exe.aid.AIDLength],
-                        "associatedSecurityDomain": exe.associatedSecurityDomainAID.AID[:exe.associatedSecurityDomainAID.AIDLength],
+                        "AID": aid.hex() if convert else aid,
+                        "associatedSecurityDomain": sdaid.hex() if convert else sdaid,
                         "versionNumber": f"{exe.versionNumber[0]}.{exe.versionNumber[1]}",
                         "lifeCycleState": EXECUTABLE_LIFECYCLE.get(exe.lifeCycleState, "UNKNOWN") if convert else exe.lifeCycleState,
                         "executableModules": modules
@@ -225,9 +236,11 @@ class GP211Shell(OpenPlatformShell):
 
                 for i in range(dataLengthAppl):
                     app = gp.GP211_APPLICATION_DATA_Array_getitem(applData, i)
+                    aid = app.aid.AID[:app.aid.AIDLength]
+                    sdaid = app.associatedSecurityDomainAID.AID[:app.associatedSecurityDomainAID.AIDLength]
                     instances.append({
-                        "AID": app.aid.AID[:app.aid.AIDLength],
-                        "associatedSecurityDomain": app.associatedSecurityDomainAID.AID[:app.associatedSecurityDomainAID.AIDLength],
+                        "AID": aid.hex() if convert else aid,
+                        "associatedSecurityDomain": sdaid.hex() if convert else sdaid,
                         "versionNumber": f"{app.versionNumber[0]}.{app.versionNumber[1]}",
                         "lifeCycleState": APPLICATION_LIFECYCLE.get(app.lifeCycleState, "UNKNOWN") if convert else app.lifeCycleState,
                         "privileges": [n for b, n in PRIVILEGES.items() if app.privileges & b] if convert else app.privileges
@@ -244,9 +257,11 @@ class GP211Shell(OpenPlatformShell):
             dataLengthAppl = gp.DWORDp_value(dataLengthPtr)
 
             app = gp.GP211_APPLICATION_DATA_Array_getitem(applData, 0)
+            aid = exe.aid.AID[:exe.aid.AIDLength]
+            sdaid = exe.associatedSecurityDomainAID.AID[:exe.associatedSecurityDomainAID.AIDLength]
             isd = {
-                "AID": app.aid.AID[:app.aid.AIDLength],
-                "associatedSecurityDomain": app.associatedSecurityDomainAID.AID[:app.associatedSecurityDomainAID.AIDLength],
+                "AID": aid.hex() if convert else aid,
+                "associatedSecurityDomain": sdaid.hex() if convert else sdaid,
                 "versionNumber": f"{app.versionNumber[0]}.{app.versionNumber[1]}",
                 "lifeCycleState": CARD_LIFECYCLE.get(app.lifeCycleState, "UNKNOWN") if convert else app.lifeCycleState,
                 "privileges": [n for b, n in PRIVILEGES.items() if app.privileges & b] if convert else app.privileges
