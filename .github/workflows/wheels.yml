@@ -218,7 +218,8 @@ jobs:
           nmake
           cp ..\gpshell\helloworld.cap globalplatform\src
           cp ..\globalplatform\src\rsa_pub_key_test.pem globalplatform\src
-          nmake test
+          set CTEST_OUTPUT_ON_FAILURE=1
+          nmake test VERBOSE=1
           nmake install
 
       # Wheels
