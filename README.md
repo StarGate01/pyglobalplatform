@@ -14,21 +14,19 @@ The `pcsclite` and `globalplatform` libraries need to be available.
 
 ## Installation
 
-For a local development install, use pip:
+For a local install, use pip - this will also invoke Swig and compile a version which uses your systems libraries. On Linux `pkg-config` is used to find the libraries, on Mac OSX and Windows, you have to declare the environment variable `GP_SDK_DIR` to point into a local copy of https://github.com/kaoh/globalplatform , where the library has been compiled and installed into the `install/` subdirectory.
 
 `pip install .`
 
-This repository also provides pre-built Python Wheels for use with Linux, Mac OSX and Windows.
+This repository also provides pre-built Python Wheels for use with Linux x64 / arm64, Mac OSX x64 / arm64 and Windows x68 / x64.
 
-- On Linux, you are still expected to install `pcsclite`, and `globalplatform` via your system package manager into your system path.
-- On Mac OSX, these packages are shipped in the Wheel, among with the OpenSSL libraries.
-- On Windows, these packages are shipped in the Wheel as well, along with some more OpenSSL and VS runtime libraries.
+- On Linux, you are still expected to install `pcsclite` and OpenSSL (`libssl` / `libcrypto`) via your system package manager into your system path.
+- On Mac OSX, OpenSSL is shipped in the standalone Wheel.
+- On Windows, OpenSSL, ZLib, and the VS runtime libraries are shipped in the standalone Wheel.
 
-On Mac OSX and Windows, the `gppcscconnectionplugin` library is also shipped in the Wheel, providing a connection to the OS PC/SC interface. On Linux, you are expected to have `gppcscconnectionplugin.so` available in your system path somewhere where it can be dlopen()'ed by `libglobalplatform.so`.
+The `globalplatform` and `gppcscconnectionplugin` libraries are always shipped in the Wheel, providing a connection to the OS PC/SC interface.
 
-To install the precompiled package, you can also use pip:
-
-`pip install --no-cache --only-binary ':all:' --find-links 'https://github.com/StarGate01/pyglobalplatform/releases/tag/1.0.0' 'globalplatform==1.0.0' --no-index`
+To install the precompiled package, you can use pip as well.
 
 ## Usage
 
