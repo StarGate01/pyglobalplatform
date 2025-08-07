@@ -88,7 +88,7 @@ jobs:
           MACOSX_DEPLOYMENT_TARGET: "10.9"
           SDKROOT: /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk
         run: |
-          git clone --depth 1 --branch ${GP_VERSION} ${GP_REPO} gpsdk
+          git clone --depth 1 --branch ${{ env.GP_VERSION }} ${{ env.GP_REPO }} gpsdk
           cd gpsdk
           mkdir build && cd build
           cmake -DTESTING=ON \
@@ -200,9 +200,10 @@ jobs:
         if: runner.os == 'Windows' && steps.windows_cache_gpsdk.outputs.cache-hit != 'true'
         shell: cmd
         run: |
+          cp C:\cmocka-win-${{ matrix.arch }}\bin\cmocka.dll C:\Windows
           choco install -y doxygen.install graphviz
           set CL=/MP
-          git clone --depth 1 --branch ${GP_VERSION} ${GP_REPO} gpsdk
+          git clone --depth 1 --branch ${{ env.GP_VERSION }} ${{ env.GP_REPO }} gpsdk
           cd gpsdk
           mkdir build
           cd build
@@ -245,7 +246,7 @@ jobs:
                 yum install -y git make gcc gcc-c++ pkg-config openssl-devel pcsc-lite-devel \
                     zlib-devel cmake graphviz doxygen pandoc libcmocka-devel patchelf; \
             fi; \
-            git clone --depth 1 --branch ${GP_VERSION} ${GP_REPO} gpsdk
+            git clone --depth 1 --branch ${{ env.GP_VERSION }} ${{ env.GP_REPO }} gpsdk
             cd gpsdk
             mkdir build && cd build
             cmake -DTESTING=ON \
