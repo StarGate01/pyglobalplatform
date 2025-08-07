@@ -6,15 +6,29 @@ Not to be confused with https://github.com/JavaCardOS/pyGlobalPlatform , which i
 
 ## Requirements
 
-Currently, only Linux is supported by the build system.
+Linux is the primary target, but Mac OSX and Windows are supported as well, with pre-compiled wheels available.
 
 Python 3 with `setuptools`, a C toolchain, `swig`, and `pkg-config` need to be available.
 
-The `pcsclite` and `globalplatform` libraries need to be available via pkg-config.
+The `pcsclite` and `globalplatform` libraries need to be available.
 
 ## Installation
 
+For a local development install, use pip:
+
 `pip install .`
+
+This repository also provides pre-built Python Wheels for use with Linux, Mac OSX and Windows.
+
+- On Linux, you are still expected to install `pcsclite`, and `globalplatform` via your system package manager into your system path.
+- On Mac OSX, these packages are shipped in the Wheel, among with the OpenSSL libraries.
+- On Windows, these packages are shipped in the Wheel as well, along with some more OpenSSL and VS runtime libraries.
+
+On Mac OSX and Windows, the `gppcscconnectionplugin` library is also shipped in the Wheel, providing a connection to the OS PC/SC interface. On Linux, you are expected to have `gppcscconnectionplugin.so` available in your system path somewhere where it can be dlopen()'ed by `libglobalplatform.so`.
+
+To install the precompiled package, you can also use pip:
+
+`pip install --no-cache --only-binary ':all:' --find-links 'https://github.com/StarGate01/pyglobalplatform/releases/tag/1.0.0' 'globalplatform==1.0.0' --no-index`
 
 ## Usage
 

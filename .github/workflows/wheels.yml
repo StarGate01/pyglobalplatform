@@ -1,0 +1,258 @@
+name: Build Wheels
+
+on:
+  push:
+    tags:
+      - '*.*.*'
+
+jobs:
+  build_wheels:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        include:
+          - os: ubuntu-24.04
+            arch: x86_64
+          - os: ubuntu-24.04-arm
+            arch: arm64
+          - os: windows-2022
+            arch: x86
+            cibw_arch: x86
+            openssl_config: VC-WIN32
+            msvc: x86
+          - os: windows-2022
+            arch: x86_64
+            cibw_arch: AMD64
+            openssl_config: VC-WIN64A
+            msvc: x64
+          - os: macos-13
+            arch: x86_64
+            openssl_config: darwin64-x86_64-cc
+          - os: macos-15
+            arch: arm64
+            openssl_config: darwin64-arm64-cc
+
+    env:
+      GP_VERSION: 2.4.2 # GlobalPlatform tag
+      OPENSSL_VERSION: 3.5.2
+      ZLIB_VERSION: 1.3.1
+
+    steps:
+      - uses: actions/checkout@v4
+
+      # MacOS
+      - name: Download and install build tools on MacOS
+        if: runner.os == 'macOS'
+        run: |
+          brew update
+          brew install cmake cmocka graphviz doxygen pandoc swig
+    
+      - name: Cache OpenSSL build on MacOS
+        if: runner.os == 'macOS'
+        id: mac_cache_openssl
+        uses: actions/cache@v4
+        with:
+          path: /Users/runner/ssl-macosx-${{ matrix.arch }}
+          key: ${{ runner.os }}-openssl-${{ env.OPENSSL_VERSION }}-${{ matrix.arch }}
+
+      - name: Download and compile OpenSSL on MacOS
+        if: runner.os == 'macOS' && steps.mac_cache_openssl.outputs.cache-hit != 'true'
+        env:
+          MACOSX_DEPLOYMENT_TARGET: "10.9"
+          SDKROOT: /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk
+        run: |
+          curl -LO https://www.openssl.org/source/openssl-${{ env.OPENSSL_VERSION }}.tar.gz
+          tar xzf openssl-${{ env.OPENSSL_VERSION }}.tar.gz
+          cd openssl-${{ env.OPENSSL_VERSION }}
+          ./Configure ${{ matrix.openssl_config }} \
+            --prefix=/Users/runner/ssl-macosx-${{ matrix.arch }} \
+            --openssldir=/Users/runner/ssl-macosx-${{ matrix.arch }} \
+            shared no-ssl3 no-comp
+          make depend -j$(sysctl -n hw.ncpu)
+          make -j$(sysctl -n hw.ncpu)
+          make install_sw
+                
+      - name: Download and compile GlobalPlatform on MacOS
+        if: runner.os == 'macOS'
+        env:
+          MACOSX_DEPLOYMENT_TARGET: "10.9"
+          SDKROOT: /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk
+        run: |
+          git clone --depth 1 --branch ${GP_VERSION} https://github.com/kaoh/globalplatform.git gpsdk
+          cd gpsdk
+          mkdir build && cd build
+          cmake -DTESTING=ON \
+            -DCMAKE_BUILD_TYPE=Release \
+            -DCMAKE_C_COMPILER=/usr/bin/gcc \
+            -DOPENSSL_ROOT_DIR=/Users/runner/ssl-macosx-${{ matrix.arch }} \
+            -DCMAKE_INSTALL_PREFIX=$(pwd)/../install ..
+          make -j$(sysctl -n hw.ncpu)
+          cp ../gpshell/helloworld.cap globalplatform/src
+          cp ../globalplatform/src/rsa_pub_key_test.pem globalplatform/src
+          make test
+          make install
+          install_name_tool -add_rpath "@loader_path/../.dylibs" -add_rpath "$(pwd)/../install/lib" "$(pwd)/../install/lib/libglobalplatform.dylib"
+          install_name_tool -add_rpath "@loader_path/../.dylibs" -add_rpath "$(pwd)/../install/lib" "$(pwd)/../install/lib/libgppcscconnectionplugin.dylib"
+
+      # Windows
+      - name: "Setup MSVC toolchain on Windows"
+        if: runner.os == 'Windows' 
+        uses: TheMrMilchmann/setup-msvc-dev@v3
+        with:
+          arch: ${{ matrix.msvc }}
+
+      - name: Cache OpenSSL build on Windows
+        if: runner.os == 'Windows'
+        id: windows_cache_openssl
+        uses: actions/cache@v4
+        with:
+          path: C:\ssl-win-${{ matrix.arch }}
+          key: ${{ runner.os }}-openssl-${{ env.OPENSSL_VERSION }}-${{ matrix.arch }}
+
+      - name: Setup NASM on Windows
+        if: runner.os == 'Windows' && steps.windows_cache_openssl.outputs.cache-hit != 'true'
+        uses: ilammy/setup-nasm@v1
+
+      - name: Download and compile OpenSSL on Windows
+        if: runner.os == 'Windows' && steps.windows_cache_openssl.outputs.cache-hit != 'true'
+        shell: cmd
+        run: |
+          set CL=/MP
+          curl -LO https://www.openssl.org/source/openssl-${{ env.OPENSSL_VERSION }}.tar.gz
+          tar -xzf openssl-${{ env.OPENSSL_VERSION }}.tar.gz
+          cd openssl-${{ env.OPENSSL_VERSION }}
+          perl Configure ${{ matrix.openssl_config }}^
+            --prefix=C:\ssl-win-${{ matrix.arch }} ^
+            --openssldir=C:\ssl-win-${{ matrix.arch }} ^
+            shared no-ssl3 no-comp
+          nmake depend
+          nmake
+          nmake install_sw
+
+      - name: Cache ZLib build on Windows
+        if: runner.os == 'Windows'
+        id: windows_cache_zlib
+        uses: actions/cache@v4
+        with:
+          path: C:\zlib-win-${{ matrix.arch }}
+          key: ${{ runner.os }}-zlib-${{ env.ZLIB_VERSION }}-${{ matrix.arch }}
+
+      - name: Download and compile ZLib on Windows
+        if: runner.os == 'Windows' && steps.windows_cache_zlib.outputs.cache-hit != 'true'
+        shell: cmd
+        run: |
+          set CL=/MP
+          curl -LO https://zlib.net/zlib-${{ env.ZLIB_VERSION }}.tar.gz
+          tar -xzf zlib-${{ env.ZLIB_VERSION }}.tar.gz
+          cd zlib-${{ env.ZLIB_VERSION }}
+          cmake -G "NMake Makefiles" ^
+            -DCMAKE_BUILD_TYPE=Release ^
+            -DCMAKE_C_FLAGS="/D ZLIB_WINAPI" ^
+            -DCMAKE_INSTALL_PREFIX="C:\zlib-win-${{ matrix.arch }}"
+          nmake
+          nmake install
+
+      - name: Cache GlobalPlatform build on Windows
+        if: runner.os == 'Windows'
+        id: windows_cache_gpsdk
+        uses: actions/cache@v4
+        with:
+          path: ${{ github.workspace }}\gpsdk
+          key: ${{ runner.os }}-gpsdk-${{ env.GP_VERSION }}-${{ matrix.arch }}
+
+      - name: Download and compile GlobalPlatform on Windows
+        if: runner.os == 'Windows' && steps.windows_cache_gpsdk.outputs.cache-hit != 'true'
+        shell: cmd
+        run: |
+          choco install -y doxygen.install graphviz
+          set CL=/MP
+          git clone --depth 1 --branch add-api https://github.com/StarGate01/globalplatform.git gpsdk
+          cd gpsdk
+          cmake -G "NMake Makefiles" ^
+            -DCMAKE_BUILD_TYPE=Release ^
+            -DTESTING:BOOL=OFF ^
+            -DCMAKE_VERBOSE_MAKEFILE:BOOL=ON ^
+            -DCMAKE_INSTALL_PREFIX="%CD%\install" ^
+            -DOPENSSL_ROOT_DIR="C:\ssl-win-${{ matrix.arch }}" ^
+            -DZLIB_ROOT="C:\zlib-win-${{ matrix.arch }}"
+          nmake VERBOSE=1
+          nmake install VERBOSE=1
+
+      # Wheels
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.x"
+
+      - name: Install Python dependencies
+        run: python -m pip install cibuildwheel
+
+      - name: Compile wheels
+        run: python -m cibuildwheel --output-dir dist
+        env:
+          GP_SDK_DIR: "${{ github.workspace }}/gpsdk"
+
+          # Linux in container
+          CIBW_ENVIRONMENT_LINUX: GP_VERSION=${{ env.GP_VERSION }} GP_SDK_DIR="${{ github.workspace }}/gpsdk"
+          CIBW_REPAIR_WHEEL_COMMAND_LINUX: auditwheel repair -w {dest_dir} {wheel} --exclude "libssl*" --exclude "libcrypto*" --exclude "libpcsclite*"
+          CIBW_BEFORE_ALL_LINUX: |
+            if command -v apk > /dev/null; then \
+                apk add --no-cache git make gcc g++ pkgconfig openssl-dev pcsc-lite-dev \
+                    zlib-dev cmake graphviz doxygen pandoc cmocka-dev patchelf; \
+            else \
+                yum install -y git make gcc gcc-c++ pkg-config openssl-devel pcsc-lite-devel \
+                    zlib-devel cmake graphviz doxygen pandoc libcmocka-devel patchelf; \
+            fi; \
+            git clone --depth 1 --branch ${GP_VERSION} https://github.com/kaoh/globalplatform.git gpsdk
+            cd gpsdk
+            mkdir build && cd build
+            cmake -DTESTING=ON \
+              -DCMAKE_BUILD_TYPE=Release ..
+            make -j$(nproc)
+            cp ../gpshell/helloworld.cap globalplatform/src
+            cp ../globalplatform/src/rsa_pub_key_test.pem globalplatform/src
+            make test
+            make install
+            patchelf --add-rpath "/usr/local/lib/" --add-needed libgppcscconnectionplugin.so.1 /usr/local/lib/libglobalplatform.so
+
+          # Windows
+          CIBW_ARCHS_WINDOWS: ${{ matrix.cibw_arch }} 
+          CIBW_BEFORE_ALL_WINDOWS: |
+            set CL=/MP
+          CIBW_BEFORE_BUILD_WINDOWS: |
+            pip install delvewheel
+          CIBW_REPAIR_WHEEL_COMMAND_WINDOWS: |
+            delvewheel repair -w {dest_dir} {wheel} --no-mangle-all --add-path C:\ssl-win-${{ matrix.arch }}\lib --add-path C:\zlib-win-${{ matrix.arch }}\bin --add-path ${{ github.workspace }}\gpsdk\install\lib --include gppcscconnectionplugin.dll --include vcruntime140_threads.dll --include vcruntime140.dll --include libssl-3.dll --include legacy.dll
+
+      - name: Upload wheel artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: wheels-${{ matrix.os }}-${{ matrix.arch }}
+          path: dist/*
+
+  publish:
+    needs: build_wheels
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Download all wheel artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: dist
+
+      - name: Flatten wheel artifacts
+        run: |
+          mkdir -p final_dist
+          find dist -name '*.whl' -exec cp {} final_dist/ \;
+
+      - name: Create GitHub release
+        id: create_release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ github.ref_name }}
+          name: Release ${{ github.ref_name }}
+          draft: false
+          prerelease: false
+          files: final_dist/*.whl
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

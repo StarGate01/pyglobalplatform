@@ -1,7 +1,8 @@
 %module(threads="1") native
 %{
 
-    #include "pcsclite.h"
+    #define SECURITY_WIN32
+
     #include "types.h"
     #include "unicode.h"
     #include "library.h"
@@ -13,6 +14,22 @@
     #include "connection.h"
 
     static PyObject* OPGPError_class = NULL;
+
+    #define SCARD_SCOPE_USER		0x0000	/**< Scope in user space */
+    #define SCARD_SCOPE_TERMINAL	0x0001	/**< Scope in terminal */
+    #define SCARD_SCOPE_SYSTEM		0x0002	/**< Scope in system */
+
+    #define SCARD_PROTOCOL_UNSET	0x0000	/**< protocol not set */
+    #define SCARD_PROTOCOL_T0		0x0001	/**< T=0 active protocol. */
+    #define SCARD_PROTOCOL_T1		0x0002	/**< T=1 active protocol. */
+    #define SCARD_PROTOCOL_RAW		0x0004	/**< Raw active protocol. */
+    #define SCARD_PROTOCOL_T15		0x0008	/**< T=15 protocol. */
+
+    #define SCARD_PROTOCOL_ANY		(SCARD_PROTOCOL_T0|SCARD_PROTOCOL_T1)	/**< IFD determines prot. */
+
+    #define SCARD_SHARE_EXCLUSIVE	0x0001	/**< Exclusive mode only */
+    #define SCARD_SHARE_SHARED		0x0002	/**< Shared mode only */
+    #define SCARD_SHARE_DIRECT		0x0003	/**< Raw mode only */
 
 %}
 
@@ -119,7 +136,6 @@
 %array_functions(GP211_EXECUTABLE_MODULES_DATA, GP211_EXECUTABLE_MODULES_DATA_Array)
 %array_functions(OPGP_AID, OPGP_AID_Array)
 
-%include "pcsclite.h"
 %include "types.h"
 %include "unicode.h"
 %include "library.h"
