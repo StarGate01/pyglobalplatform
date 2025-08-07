@@ -180,9 +180,11 @@ jobs:
           7z x cmocka-${{ env.CMOCKA_VERSION }}.tar 
           del cmocka-${{ env.CMOCKA_VERSION }}.tar
           cd cmocka-${{ env.CMOCKA_VERSION }}
+          mkdir build
+          cd build
           cmake -G "NMake Makefiles" ^
             -DCMAKE_BUILD_TYPE=Release ^
-            -DCMAKE_INSTALL_PREFIX="C:\cmocka-win-${{ matrix.arch }}"
+            -DCMAKE_INSTALL_PREFIX="C:\cmocka-win-${{ matrix.arch }}" ..
           nmake
           nmake install
 
