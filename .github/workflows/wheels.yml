@@ -188,13 +188,13 @@ jobs:
           nmake
           nmake install
 
-      - name: Cache GlobalPlatform build on Windows
-        if: runner.os == 'Windows'
-        id: windows_cache_gpsdk
-        uses: actions/cache@v4
-        with:
-          path: ${{ github.workspace }}\gpsdk
-          key: ${{ runner.os }}-gpsdk-${{ env.GP_VERSION }}-${{ matrix.arch }}
+      # - name: Cache GlobalPlatform build on Windows
+      #   if: runner.os == 'Windows'
+      #   id: windows_cache_gpsdk
+      #   uses: actions/cache@v4
+      #   with:
+      #     path: ${{ github.workspace }}\gpsdk
+      #     key: ${{ runner.os }}-gpsdk-${{ env.GP_VERSION }}-${{ matrix.arch }}
 
       - name: Download and compile GlobalPlatform on Windows
         if: runner.os == 'Windows' && steps.windows_cache_gpsdk.outputs.cache-hit != 'true'
