@@ -177,7 +177,7 @@ jobs:
           set CL=/MP
           curl -LO https://cmocka.org/files/1.1/cmocka-${{ env.CMOCKA_VERSION }}.tar.xz
           7z x cmocka-${{ env.CMOCKA_VERSION }}.tar.xz
-          7z xcmocka-${{ env.CMOCKA_VERSION }}.tar 
+          7z x cmocka-${{ env.CMOCKA_VERSION }}.tar 
           del cmocka-${{ env.CMOCKA_VERSION }}.tar
           cd cmocka-${{ env.CMOCKA_VERSION }}
           cmake -G "NMake Makefiles" ^
