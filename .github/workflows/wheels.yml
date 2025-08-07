@@ -200,9 +200,10 @@ jobs:
         if: runner.os == 'Windows' && steps.windows_cache_gpsdk.outputs.cache-hit != 'true'
         shell: cmd
         run: |
-          cp C:\cmocka-win-${{ matrix.arch }}\bin\cmocka.dll C:\Windows
           choco install -y doxygen.install graphviz
           set CL=/MP
+          set "PATH=C:\cmocka-win-${{ matrix.arch }}\bin;%PATH%" 
+          set CTEST_OUTPUT_ON_FAILURE=1
           git clone --depth 1 --branch ${{ env.GP_VERSION }} ${{ env.GP_REPO }} gpsdk
           cd gpsdk
           mkdir build
@@ -218,8 +219,7 @@ jobs:
           nmake
           cp ..\gpshell\helloworld.cap globalplatform\src
           cp ..\globalplatform\src\rsa_pub_key_test.pem globalplatform\src
-          set CTEST_OUTPUT_ON_FAILURE=1
-          nmake test VERBOSE=1
+          nmake test
           nmake install
 
       # Wheels
