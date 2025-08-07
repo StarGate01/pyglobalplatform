@@ -202,8 +202,6 @@ jobs:
         run: |
           choco install -y doxygen.install graphviz
           set CL=/MP
-          set "PATH=C:\cmocka-win-${{ matrix.arch }}\bin;%PATH%" 
-          set CTEST_OUTPUT_ON_FAILURE=1
           git clone --depth 1 --branch ${{ env.GP_VERSION }} ${{ env.GP_REPO }} gpsdk
           cd gpsdk
           mkdir build
@@ -219,6 +217,8 @@ jobs:
           nmake
           cp ..\gpshell\helloworld.cap globalplatform\src
           cp ..\globalplatform\src\rsa_pub_key_test.pem globalplatform\src
+          set "PATH=C:\cmocka-win-${{ matrix.arch }}\bin;C:\ssl-win-${{ matrix.arch }}\lib;C:\zlib-win-${{ matrix.arch }}\bin;%PATH%" 
+          set CTEST_OUTPUT_ON_FAILURE=1
           nmake test
           nmake install
 
